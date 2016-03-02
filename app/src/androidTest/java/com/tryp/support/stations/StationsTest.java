@@ -31,9 +31,8 @@ import static org.junit.Assert.assertTrue;
 @SmallTest
 public class StationsTest {
 
-    private static final String BASIC_SAMPLE_PACKAGE = "com.tryp.support";
+    private static final String PACKAGE = "com.tryp.support";
     private static final int LAUNCH_TIMEOUT = 5000;
-    private static final String STRING_TO_BE_TYPED = "UiAutomator";
     private UiDevice mDevice;
 
     @Before
@@ -53,13 +52,13 @@ public class StationsTest {
         // Launch the app
         Context context = InstrumentationRegistry.getContext();
         final Intent intent = context.getPackageManager()
-                .getLaunchIntentForPackage(BASIC_SAMPLE_PACKAGE);
+                .getLaunchIntentForPackage(PACKAGE);
         // Clear out any previous instances
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         context.startActivity(intent);
 
         // Wait for the app to appear
-        mDevice.wait(Until.hasObject(By.pkg(BASIC_SAMPLE_PACKAGE).depth(0)),
+        mDevice.wait(Until.hasObject(By.pkg(PACKAGE).depth(0)),
                 LAUNCH_TIMEOUT);
     }
 

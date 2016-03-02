@@ -6,7 +6,9 @@ import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -40,6 +42,9 @@ public class HostActivity extends AppCompatActivity implements GoogleApiClient.C
     @ViewById(R.id.toolbar)
     Toolbar toolbar;
 
+    @ViewById(R.id.pager)
+    ViewPager pager;
+
     @FragmentById(R.id.fragment)
     StationsView view;
 
@@ -48,6 +53,7 @@ public class HostActivity extends AppCompatActivity implements GoogleApiClient.C
 
     StationsPresenter presenter;
     GoogleApiClient googleApiClient;
+
     EventBus eventBus;
 
     @Override
@@ -60,7 +66,6 @@ public class HostActivity extends AppCompatActivity implements GoogleApiClient.C
                     .addApi(LocationServices.API)
                     .build();
         }
-        eventBus = new EventBus();
     }
 
     @Override
@@ -71,12 +76,23 @@ public class HostActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @AfterViews
     void injection () {
-        presenter = new StationsPresenter(repository, view);
+        FragmentPagerAdapter adapter = new HostAdapter(getSupportFragmentManager());
+        pager.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+
+        presenter = new StationsPresenter(repository, (StationsView) adapter.getItem(0));
 
     }
 
     @NonNull public EventBus getEventBus() {
+        if (eventBus == null) {
+            eventBus = new EventBus();
+        }
         return eventBus;
+    }
+
+    @NonNull public StationsPresenter getStationsPresenter() {
+        return presenter;
     }
 
     @AfterViews

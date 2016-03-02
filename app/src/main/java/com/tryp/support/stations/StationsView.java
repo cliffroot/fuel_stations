@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.MapView;
@@ -38,6 +39,8 @@ public class StationsView extends Fragment implements StationsContract.View {
 
     private static final float MAP_ZOOM_DEFAULT = 12.f;
 
+    static Fragment instance;
+
     @ViewById(R.id.map_view)
     MapView mapView;
 
@@ -63,6 +66,14 @@ public class StationsView extends Fragment implements StationsContract.View {
 
     public StationsView() { }
 
+    public static Fragment getInstance() {
+        if (instance == null) {
+            instance = new StationsView_();
+            instance.setRetainInstance(true);
+        }
+        return instance;
+    }
+
     @AfterViews
     void setupMap () {
         mapView.onCreate(null);
@@ -81,6 +92,13 @@ public class StationsView extends Fragment implements StationsContract.View {
                 dismissSelection();
             }
         }));
+    }
+
+    @AfterViews
+    void setupStations () {
+        Log.e("setup stations ==> ", "mapview ==null" + (mapView     == null));
+        Log.e("setup stations ==> ", "progress==null" + (progressBar == null));
+        ((HostActivity) getActivity()).getStationsPresenter().initialSetup();
     }
 
     @Override
@@ -116,10 +134,12 @@ public class StationsView extends Fragment implements StationsContract.View {
 
     @Override
     public void displayProgressBar(boolean active) {
-        getActivity().runOnUiThread(() -> {
-            progressBar.setVisibility(active ? View.VISIBLE : View.INVISIBLE);
-            mapView.setVisibility(active ? View.INVISIBLE : View.VISIBLE);
-        });
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(() -> {
+                progressBar.setVisibility(active ? View.VISIBLE : View.INVISIBLE);
+                mapView.setVisibility(active ? View.INVISIBLE : View.VISIBLE);
+            });
+        }
     }
 
     @Override
@@ -194,13 +214,17 @@ public class StationsView extends Fragment implements StationsContract.View {
 
     @Override
     public void displayError(@NonNull String error) {
-
+        Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void getCurrentBounds(Callback<LatLngBounds> callback) {
-        mapView.getMapAsync(map -> {
-            callback.onDone(map.getProjection().getVisibleRegion().latLngBounds);
-        });
+        if (mapView != null) {
+            mapView.getMapAsync(map -> {
+                callback.onDone(map.getProjection().getVisibleRegion().latLngBounds);
+            });
+        } else {
+            callback.onFail("Something went wrong with the map");
+        }
     }
 }

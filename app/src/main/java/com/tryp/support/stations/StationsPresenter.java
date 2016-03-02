@@ -19,11 +19,9 @@ public class StationsPresenter implements StationsContract.UserActionListener {
     public StationsPresenter (StationRepository repository, StationsView view) {
         this.repository = repository;
         this.view       = view;
-
-        initialSetup();
     }
 
-    void initialSetup() {
+    public void initialSetup() {
         loadStations();
         view.setActionListener(this);
     }

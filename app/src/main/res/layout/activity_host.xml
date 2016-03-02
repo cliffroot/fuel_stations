@@ -17,10 +17,30 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:elevation="0dp"
+            />
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_host" />
+    <android.support.v4.view.ViewPager
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <android.support.v4.view.PagerTabStrip
+            android:id="@+id/pager_title_strip"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/tab_strip_height"
+            android:layout_gravity="top"
+            android:paddingTop="5dp"
+            android:background="@color/colorPrimaryDark"
+            android:textColor="#ffffff"
+            android:paddingBottom="5dp" />
+
+    </android.support.v4.view.ViewPager>
+
+    <!--<include layout="@layout/content_host" />-->
 
 </android.support.design.widget.CoordinatorLayout>
