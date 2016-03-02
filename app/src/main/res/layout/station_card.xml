@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/station_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="24sp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginTop="8dp"
+        android:text="WOW"
+        android:textColor = "@color/place_autocomplete_prediction_primary_text"/>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/station_address"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="20sp"
+                android:layout_marginLeft="16dp"
+                android:text="SUCH STATION"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:layout_toLeftOf="@+id/see_more_button"
+                android:textColor="@color/place_autocomplete_prediction_secondary_text"/>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/see_more_button"
+                android:layout_marginRight="16dp"
+                android:layout_alignParentRight="true"
+                style="@android:style/Widget.Holo.Button.Borderless"
+                android:layout_margin="4dp"
+                android:textColor="@color/colorPrimary"
+                android:text="SEE MORE"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
