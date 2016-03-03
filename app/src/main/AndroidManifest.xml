@@ -30,6 +30,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".AppPreferenceActivity_"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:label="Preferences"/>
     </application>
 
 </manifest>

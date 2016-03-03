@@ -13,11 +13,13 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Maps;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import com.google.common.eventbus.Subscribe;
 import com.tryp.support.HostActivity;
 import com.tryp.support.R;
@@ -27,10 +29,10 @@ import com.tryp.support.utils.SwipeDismissTouchListener;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.Collection;
-import java.util.Map;
 
 import java8.util.stream.StreamSupport;
 
@@ -59,8 +61,16 @@ public class StationsView extends Fragment implements StationsContract.View {
     @ViewById(R.id.see_more_button)
     Button seeMoreButton;
 
-    Map<Marker, Station> markersToStationsMap = Maps.newHashMap();
+    BiMap<Marker, Station> markerStationsMap = HashBiMap.create();
+
     Marker currentMarker;
+    Marker myLocationMarker;
+
+    @InstanceState
+    Station currentStation;
+
+    @InstanceState
+    CameraPosition currentCameraPosition;
 
     StationsContract.UserActionListener actionListener;
 
@@ -152,26 +162,30 @@ public class StationsView extends Fragment implements StationsContract.View {
                             station -> {
                                 Marker m = map.addMarker(new MarkerOptions().position(station.getPosition()).title(station.getName())
                                         .snippet(station.getAddress()));
-                                markersToStationsMap.put(m, station);
+                                markerStationsMap.forcePut(m, station);
                             }
                     );
                     map.setOnMarkerClickListener((marker) -> {
-                        if (markersToStationsMap.get(marker) == null) { // this must be our current location marker
+                        if (markerStationsMap.get(marker) == null) { // this must be our current location marker
                             return false;
                         }
                         currentMarker = marker;
-                        stationCard.setVisibility(View.VISIBLE);
-                        stationNameView.setText(markersToStationsMap.get(marker).getName());
-                        stationAddressView.setText(markersToStationsMap.get(marker).getAddress());
-                        seeMoreButton.setOnClickListener((view) -> {
-                            actionListener.showFullDetails(markersToStationsMap.get(marker));
-                        });
+                        currentStation = markerStationsMap.get(marker);
+                        displayBriefDetails(currentStation);
                         return false;
                     });
 
-                    map.setOnMapClickListener((point) -> {
-                        dismissSelection();
-                    });
+
+                    map.setOnMapClickListener((point) -> dismissSelection());
+
+                    if (currentStation != null) {
+                        currentMarker = markerStationsMap.inverse().get(currentStation);
+                        currentMarker.showInfoWindow();
+                        displayBriefDetails(currentStation);
+                    }
+
+                    map.setOnCameraChangeListener(cameraPosition -> currentCameraPosition = cameraPosition);
+
                 });
             });
         }
@@ -181,14 +195,22 @@ public class StationsView extends Fragment implements StationsContract.View {
     void updateMap (LocationReceivedEvent event) {
         Log.e("StationsView", "updateMap called");
         mapView.getMapAsync(map -> {
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(event.location, MAP_ZOOM_DEFAULT));
-            map.addMarker(new MarkerOptions().title("Me").position(event.location));
+            myLocationMarker = map.addMarker(new MarkerOptions().title("Me").position(event.location));
+            if (currentCameraPosition == null) {
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(event.location, MAP_ZOOM_DEFAULT));
+            } else {
+                map.moveCamera(CameraUpdateFactory.newCameraPosition(currentCameraPosition));
+            }
         });
     }
 
     @Override
     public void displayBriefDetails(@NonNull Station station) {
         Preconditions.checkNotNull(station);
+        stationCard.setVisibility(View.VISIBLE);
+        stationNameView.setText(markerStationsMap.get(currentMarker).getName());
+        stationAddressView.setText(markerStationsMap.get(currentMarker).getAddress());
+        seeMoreButton.setOnClickListener((view) -> actionListener.showFullDetails(markerStationsMap.get(currentMarker)));
     }
 
     @Override
@@ -202,8 +224,8 @@ public class StationsView extends Fragment implements StationsContract.View {
         if (currentMarker != null) {
             currentMarker.hideInfoWindow();
         }
-
-        currentMarker = null;
+        currentMarker   = null;
+        currentStation  = null;
     }
 
     @Override
@@ -214,7 +236,10 @@ public class StationsView extends Fragment implements StationsContract.View {
 
     @Override
     public void displayError(@NonNull String error) {
-        Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
+        Preconditions.checkNotNull(error);
+        if (getActivity() != null) {
+            Toast.makeText(getActivity(), error, Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override

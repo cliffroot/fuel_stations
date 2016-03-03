@@ -49,6 +49,7 @@ public class StationsPresenter implements StationsContract.UserActionListener {
 
             @Override
             public void onFail(String reason) {
+                view.displayProgressBar(false);
                 view.displayError(reason);
             }
         });

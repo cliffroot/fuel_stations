@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="updateArray">
+        <item name="three">Every 3 hours</item>
+        <item name="six">Every 6 hours</item>
+        <item name="twelve">Every 12 hours</item>
+        <item name="twofour">Every 24 hours</item>
+
+    </string-array>
+    <string-array name="updateValues" >
+
+        <item name ="threeValue">1</item>
+        <item name ="sixValue">2</item>
+        <item name ="twelveValue">3</item>
+        <item name ="twofourValue">4</item>
+
+    </string-array>
+</resources>

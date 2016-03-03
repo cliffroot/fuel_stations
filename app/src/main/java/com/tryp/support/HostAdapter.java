@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import com.tryp.support.stations.StationsView;
+import com.tryp.support.stations_list.StationsListView;
 
 /**
  * Created by cliffroot on 02.03.16.
@@ -23,7 +24,7 @@ public class HostAdapter extends FragmentPagerAdapter {
             case 0:
                 return StationsView.getInstance();
             case 1:
-                return new Fragment();
+                return StationsListView.getInstance();
             default:
                 return new Fragment();
         }
@@ -37,7 +38,6 @@ public class HostAdapter extends FragmentPagerAdapter {
             case 1:
                 return "List";
         }
-
         return null;
     }
 

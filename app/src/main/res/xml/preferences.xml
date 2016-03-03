@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference android:title="Application notifications"
+        android:defaultValue="true"
+        android:summary="Notify about favorite station price updates"
+        android:key="priceUpdates" />
+    <ListPreference android:title="Update frequency"
+        android:summary="Select how frequently the app should update the data"
+        android:key="updateFreq"
+        android:defaultValue="3"
+        android:entries="@array/updateArray"
+        android:entryValues="@array/updateValues" />
+</PreferenceScreen>

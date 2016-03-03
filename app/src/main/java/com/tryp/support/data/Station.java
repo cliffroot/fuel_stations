@@ -1,5 +1,7 @@
 package com.tryp.support.data;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Pair;
@@ -15,7 +17,7 @@ import java.util.Set;
 /**
  * Created by cliffroot on 01.03.16.
  */
-public class Station {
+public class Station implements Parcelable {
 
     @NonNull
     Integer id;
@@ -117,4 +119,37 @@ public class Station {
         result = 31 * result + (fuelTypeToPriceMap != null ? fuelTypeToPriceMap.hashCode() : 0);
         return result;
     }
+
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(this.id);
+        dest.writeString(this.name);
+        dest.writeString(this.address);
+        dest.writeParcelable(this.position, 0);
+        dest.writeMap(this.fuelTypeToPriceMap);
+    }
+
+    protected Station(Parcel in) {
+        this.id = (Integer) in.readValue(Integer.class.getClassLoader());
+        this.name = in.readString();
+        this.address = in.readString();
+        this.position = in.readParcelable(LatLng.class.getClassLoader());
+        this.fuelTypeToPriceMap = in.readHashMap(BigDecimal.class.getClassLoader());
+    }
+
+    public static final Parcelable.Creator<Station> CREATOR = new Parcelable.Creator<Station>() {
+        public Station createFromParcel(Parcel source) {
+            return new Station(source);
+        }
+
+        public Station[] newArray(int size) {
+            return new Station[size];
+        }
+    };
 }
