@@ -104,9 +104,24 @@ public class StationsTest {
         assertFalse(mDevice.findObject(new UiSelector().textContains("SEE MORE")).exists());
     }
 
+    @Test
+    public void briefDetailsShownAfterRotate () throws UiObjectNotFoundException, RemoteException {
+        UiObject marker = mDevice.findObject(new UiSelector().descriptionContains("Газовик"));
+        marker.click();
+        assertTrue(mDevice.findObject(new UiSelector().textContains("SEE MORE")).exists());
+        mDevice.setOrientationLeft();
+        mDevice.findObject(new UiSelector().textContains("SEE MORE")).waitUntilGone(400);
+
+        mDevice.findObject(new UiSelector().textContains("SEE MORE")).waitForExists(400);
+        assertTrue(mDevice.findObject(new UiSelector().textContains("SEE MORE")).exists());
+
+
+    }
+
     @After
     public void cleanup () throws RemoteException {
         mDevice.unfreezeRotation();
+        mDevice.setOrientationNatural();
     }
 
 
