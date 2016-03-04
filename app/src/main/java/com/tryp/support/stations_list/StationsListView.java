@@ -5,6 +5,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -20,6 +22,7 @@ import com.tryp.support.adapter.StationsAdapter;
 import com.tryp.support.data.MockStationRepository;
 import com.tryp.support.data.Station;
 import com.tryp.support.data.StationRepository;
+import com.tryp.support.logging.LoggingFragment;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
@@ -35,7 +38,7 @@ import java.util.List;
  * Created by cliffroot on 03.03.16.
  */
 @EFragment(R.layout.stations_list_view)
-public class StationsListView extends Fragment implements StationsListContract.View {
+public class StationsListView extends LoggingFragment implements StationsListContract.View {
 
     static Fragment instance;
 
@@ -61,7 +64,7 @@ public class StationsListView extends Fragment implements StationsListContract.V
     StationRepository stationRepository;
 
     @InstanceState
-    int currentRadius = 25;
+    int currentRadius = 5;
 
     @InstanceState
     String currentFuelType;
@@ -69,10 +72,8 @@ public class StationsListView extends Fragment implements StationsListContract.V
     StationsListContract.UserActionListener actionListener;
 
     public static Fragment getInstance () {
-        if (instance == null) {
-            instance = new StationsListView_();
-            instance.setRetainInstance(true);
-        }
+        instance = new StationsListView_();
+        //instance.setRetainInstance(true);
         return instance;
     }
 
@@ -83,6 +84,7 @@ public class StationsListView extends Fragment implements StationsListContract.V
 
     @AfterViews
     void setupPicker () {
+        Log.w("Log from " + getClass().getName() + hashCode(), "setupPicker");
         stationRepository.getAllFuelTypes(new StationRepository.Callback<List<String>>() {
             @Override
             public void onDone(List<String> result) {
@@ -91,7 +93,11 @@ public class StationsListView extends Fragment implements StationsListContract.V
                         result.toArray(new String[result.size()]));
                 spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 fuelPicker.setAdapter(spinnerArrayAdapter);
-                currentFuelType = (String) fuelPicker.getSelectedItem();
+                if (TextUtils.isEmpty(currentFuelType)) {
+                    currentFuelType = (String) fuelPicker.getSelectedItem();
+                } else {
+                    fuelPicker.setSelection(result.indexOf(currentFuelType));
+                }
             }
 
             @Override
@@ -112,7 +118,7 @@ public class StationsListView extends Fragment implements StationsListContract.V
     void setupRadiusPicker() {
         radiusPicker.incrementProgressBy(10);
         radiusPicker.setMax(9);
-        radiusPicker.setProgress(5);
+        radiusPicker.setProgress(currentRadius);
 
         radiusPickerText.setText("Radius: 5 km. ");
         radiusPicker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

@@ -10,8 +10,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -20,68 +21,46 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
-import com.tryp.support.data.MockStationRepository;
+import com.tryp.support.data.MockStationRepository_;
 import com.tryp.support.data.StationRepository;
+import com.tryp.support.logging.LoggingActivity;
 import com.tryp.support.stations.StationsPresenter;
-import com.tryp.support.stations.StationsView;
-import com.tryp.support.stations_list.StationsListPresenter;
-import com.tryp.support.stations_list.StationsListView;
 import com.tryp.support.utils.LocationReceivedEvent;
 
-import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.FragmentById;
-import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.OptionsMenu;
-import org.androidannotations.annotations.ViewById;
 
-@EActivity(R.layout.activity_host)
-@OptionsMenu(R.menu.menu_host)
-public class HostActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
+public class HostActivity extends LoggingActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, ActivityCompat.OnRequestPermissionsResultCallback,
         LocationListener {
 
-    private final static int LOCATION_PERMESSION_REQUEST_CODE = 17;
+    private final static int LOCATION_PERMISSION_REQUEST_CODE = 17;
     private final static LatLng defaultLocation = new LatLng(50.455939, 30.519617);
 
-    @ViewById(R.id.toolbar)
     Toolbar toolbar;
 
-    @ViewById(R.id.pager)
     ViewPager pager;
-
-    @FragmentById(R.id.fragment)
-    StationsView view;
-
-    @Bean(MockStationRepository.class)
     StationRepository repository;
 
-    StationsPresenter       stationsPresenter;
-    StationsListPresenter   stationsListPresenter;
     GoogleApiClient         googleApiClient;
     EventBus                eventBus;
     Location                currentLocation;
     FragmentPagerAdapter    adapter;
 
     @Override
-    protected void onCreate(Bundle b) {
+    public void onCreate(Bundle b) {
         super.onCreate(b);
-        if (googleApiClient == null) {
-            googleApiClient = new GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
-        }
+        setContentView(R.layout.activity_host);
+
+        setupGoogleServicesClient();
+        setupToolbar();
+        setupPager();
+
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        googleApiClient.connect();
         getEventBus().register(this);
+        googleApiClient.connect();
     }
 
     @Override
@@ -89,21 +68,6 @@ public class HostActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onStop();
         googleApiClient.disconnect();
         getEventBus().unregister(this);
-    }
-
-    @AfterViews
-    void injection() {
-        adapter = new HostAdapter(getSupportFragmentManager());
-        pager.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
-        stationsPresenter = new StationsPresenter(repository, (StationsView) adapter.getItem(0));
-
-    }
-
-    @Subscribe
-    void initializeStationsListPresenter (LocationReceivedEvent event) {
-        stationsListPresenter = new StationsListPresenter(repository, (StationsListView) adapter.getItem(1), getCurrentLocation());
-        stationsListPresenter.initialSetup();
     }
 
     @NonNull
@@ -114,19 +78,36 @@ public class HostActivity extends AppCompatActivity implements GoogleApiClient.C
         return eventBus;
     }
 
-    @NonNull
     public StationsPresenter getStationsPresenter() {
-        return stationsPresenter;
+        return ((HostAdapter) adapter).getStationsPresenter();
     }
 
     public LatLng getCurrentLocation() {
         return new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
     }
 
-    @AfterViews
+    void setupGoogleServicesClient () {
+        if (googleApiClient == null) {
+            googleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+    }
+
     void setupToolbar() {
+        toolbar = ((Toolbar) findViewById(R.id.toolbar));
         setSupportActionBar(toolbar);
     }
+
+    void setupPager () {
+        repository = MockStationRepository_.getInstance_(this);
+        adapter = new HostAdapter(getSupportFragmentManager(), this);
+        pager = ((ViewPager) findViewById(R.id.pager));
+        pager.setAdapter(adapter);
+    }
+
 
 
     @Override
@@ -134,7 +115,7 @@ public class HostActivity extends AppCompatActivity implements GoogleApiClient.C
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMESSION_REQUEST_CODE);
+                    LOCATION_PERMISSION_REQUEST_CODE);
         } else {
             currentLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
             eventBus.post(new LocationReceivedEvent(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude())));
@@ -154,7 +135,7 @@ public class HostActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onRequestPermissionsResult (int requestCode, String[] permissions, int[] grantResults) {
-        if (requestCode == LOCATION_PERMESSION_REQUEST_CODE) {
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if ( ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 Location lastKnownLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
@@ -182,9 +163,26 @@ public class HostActivity extends AppCompatActivity implements GoogleApiClient.C
         currentLocation = lastKnownLocation;
     }
 
-    @OptionsItem(R.id.action_settings)
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_host, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            settings();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     public void settings () {
         Intent i = new Intent(this, AppPreferenceActivity_.class);
         startActivity(i);
     }
+
+
 }

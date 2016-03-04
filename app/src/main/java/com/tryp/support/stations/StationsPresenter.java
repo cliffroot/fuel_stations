@@ -1,6 +1,7 @@
 package com.tryp.support.stations;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.tryp.support.data.Station;
@@ -28,6 +29,9 @@ public class StationsPresenter implements StationsContract.UserActionListener {
 
     @Override
     public void loadStations() {
+
+        Log.w("HostAdapter", "loadStations was called!") ;
+
         view.displayProgressBar(true);
         view.getCurrentBounds(new StationsContract.View.Callback<LatLngBounds>() {
             @Override

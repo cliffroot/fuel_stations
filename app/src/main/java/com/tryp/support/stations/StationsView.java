@@ -4,7 +4,6 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -24,6 +23,7 @@ import com.google.common.eventbus.Subscribe;
 import com.tryp.support.HostActivity;
 import com.tryp.support.R;
 import com.tryp.support.data.Station;
+import com.tryp.support.logging.LoggingFragment;
 import com.tryp.support.utils.LocationReceivedEvent;
 import com.tryp.support.utils.SwipeDismissTouchListener;
 
@@ -37,7 +37,7 @@ import java.util.Collection;
 import java8.util.stream.StreamSupport;
 
 @EFragment(R.layout.fragment_host)
-public class StationsView extends Fragment implements StationsContract.View {
+public class StationsView extends LoggingFragment implements StationsContract.View {
 
     private static final float MAP_ZOOM_DEFAULT = 12.f;
 
@@ -77,10 +77,8 @@ public class StationsView extends Fragment implements StationsContract.View {
     public StationsView() { }
 
     public static Fragment getInstance() {
-        if (instance == null) {
-            instance = new StationsView_();
-            instance.setRetainInstance(true);
-        }
+        instance = new StationsView_();
+        //instance.setRetainInstance(true);
         return instance;
     }
 
@@ -88,6 +86,7 @@ public class StationsView extends Fragment implements StationsContract.View {
     void setupMap () {
         mapView.onCreate(null);
     }
+
 
     @AfterViews
     void setupTouchDismissalListener () {
@@ -102,13 +101,6 @@ public class StationsView extends Fragment implements StationsContract.View {
                 dismissSelection();
             }
         }));
-    }
-
-    @AfterViews
-    void setupStations () {
-        Log.e("setup stations ==> ", "mapview ==null" + (mapView     == null));
-        Log.e("setup stations ==> ", "progress==null" + (progressBar == null));
-        ((HostActivity) getActivity()).getStationsPresenter().initialSetup();
     }
 
     @Override
@@ -193,7 +185,6 @@ public class StationsView extends Fragment implements StationsContract.View {
 
     @Subscribe
     void updateMap (LocationReceivedEvent event) {
-        Log.e("StationsView", "updateMap called");
         mapView.getMapAsync(map -> {
             myLocationMarker = map.addMarker(new MarkerOptions().title("Me").position(event.location));
             if (currentCameraPosition == null) {
@@ -202,6 +193,8 @@ public class StationsView extends Fragment implements StationsContract.View {
                 map.moveCamera(CameraUpdateFactory.newCameraPosition(currentCameraPosition));
             }
         });
+
+        ((HostActivity) getActivity()).getStationsPresenter().initialSetup();
     }
 
     @Override

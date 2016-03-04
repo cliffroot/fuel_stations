@@ -28,6 +28,8 @@ import java8.util.stream.StreamSupport;
 @EBean
 public class MockStationRepository implements StationRepository {
 
+    public MockStationRepository () {}
+
     static List<Station> DUMMY_VALUES = Lists.newArrayList(
             new Station(1, "Барс 2000", "Дмитра Луценка, 11", new LatLng(50.3846, 30.4447), new LinkedHashMap<>()),
             new Station(2, "АГЗП", "Кільцева дорога, 110", new LatLng(50.3833, 30.4411), new LinkedHashMap<>()),
