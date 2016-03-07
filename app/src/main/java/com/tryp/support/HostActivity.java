@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -40,10 +41,10 @@ public class HostActivity extends LoggingActivity implements GoogleApiClient.Con
     ViewPager pager;
     StationRepository repository;
 
-    GoogleApiClient         googleApiClient;
-    EventBus                eventBus;
-    Location                currentLocation;
-    FragmentPagerAdapter    adapter;
+    GoogleApiClient googleApiClient;
+    EventBus eventBus;
+    Location currentLocation;
+    FragmentPagerAdapter adapter;
 
     @Override
     public void onCreate(Bundle b) {
@@ -64,7 +65,7 @@ public class HostActivity extends LoggingActivity implements GoogleApiClient.Con
     }
 
     @Override
-    public void onStop () {
+    public void onStop() {
         super.onStop();
         googleApiClient.disconnect();
         getEventBus().unregister(this);
@@ -83,7 +84,23 @@ public class HostActivity extends LoggingActivity implements GoogleApiClient.Con
     }
 
     public LatLng getCurrentLocation() {
-        return new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        if (currentLocation == null) {
+            if (googleApiClient.isConnected()) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                        && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    currentLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+                    return new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+                } else {
+                    Log.w("HostActivity", "No location at all!");
+                    return null;
+                }
+            } else {
+                Log.w("HostActivity", "No location at all!");
+                return null;
+            }
+        } else {
+            return new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
+        }
     }
 
     void setupGoogleServicesClient () {
@@ -139,6 +156,7 @@ public class HostActivity extends LoggingActivity implements GoogleApiClient.Con
             if ( ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
                     || ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 Location lastKnownLocation = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+                currentLocation = lastKnownLocation;
                 eventBus.post(new LocationReceivedEvent(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude())));
                 requestLocationUpdates();
             } else {

@@ -1,6 +1,7 @@
 package com.tryp.support.stations;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -12,7 +13,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLngBounds;
@@ -26,6 +26,8 @@ import com.tryp.support.HostActivity;
 import com.tryp.support.R;
 import com.tryp.support.data.Station;
 import com.tryp.support.logging.LoggingFragment;
+import com.tryp.support.station_details.StationDetailsView;
+import com.tryp.support.station_details.StationDetailsView_;
 import com.tryp.support.utils.LocationReceivedEvent;
 import com.tryp.support.utils.SwipeDismissTouchListener;
 
@@ -123,7 +125,26 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
     public void onResume () {
         super.onResume();
         mapView.onResume();
+
+//        PathProvider provider = MapBoxApiPathProvider_.getInstance_(getActivity());
+//        showPath(provider);
     }
+
+//    void showPath (PathProvider pathProvider) {
+//        pathProvider.getSegments(new LatLng(30.478653, 50.39724), new LatLng(30.346875, 50.462572), new PathProvider.Callback<List<LatLng>>() {
+//            @Override
+//            public void onCompleted(List<LatLng> result) {
+//                final PolylineOptions polyline = new PolylineOptions().color(Color.BLUE).width(5.f);
+//                StreamSupport.stream(result).forEach(polyline::add);
+//                getActivity().runOnUiThread(() -> mapView.getMapAsync(map -> map.addPolyline(polyline)));
+//            }
+//
+//            @Override
+//            public void onFail() {
+//                Log.e("from stationsView", "wow, fail");
+//            }
+//        });
+//    }
 
     @Override
     public void onPause () {
@@ -152,16 +173,15 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
         }
     }
 
-    private GoogleMap map;
+
 
     @Override
     public void displayStations(@NonNull Collection<Station> stations) {
         Preconditions.checkNotNull(stations);
-        
+
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
                 mapView.getMapAsync(map -> {
-                    this.map = map;
 
                     StreamSupport.stream(markerStationsMap.keySet()).forEach(Marker::remove);
 
@@ -173,10 +193,6 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
                             }
                     );
                     map.setOnMarkerClickListener((marker) -> {
-                        for (Marker m: markerStationsMap.keySet()) {
-                        }
-
-
                         if (markerStationsMap.get(marker) == null) { // this must be our current location marker
                             if (currentStation != null) {
                                 dismissSelection();
@@ -186,6 +202,10 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
                         currentMarker = marker;
                         currentStation = markerStationsMap.get(marker);
                         displayBriefDetails(currentStation);
+
+                        seeMoreButton.setOnClickListener((view) -> {
+                            actionListener.showFullDetails(currentStation);
+                        });
                         return false;
                     });
 
@@ -231,6 +251,12 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
     @Override
     public void displayFullDetails(@NonNull Station station) {
         Preconditions.checkNotNull(station);
+
+        Intent i = new Intent(getActivity(), StationDetailsView_.class);
+        i.putExtra(StationDetailsView.STATION_EXTRA_KEY, station);
+        i.putExtra(StationDetailsView.CURRENT_LOCATION_EXTRA_KEY, ((HostActivity) getActivity()).getCurrentLocation());
+
+        getActivity().startActivity(i);
     }
 
     @Override
@@ -239,8 +265,10 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
         if (currentMarker != null) {
             currentMarker.hideInfoWindow();
         }
+
         currentMarker   = null;
         currentStation  = null;
+        seeMoreButton.setOnClickListener(null);
     }
 
     @Override

@@ -10,7 +10,7 @@
         style="@style/Base.Widget.AppCompat.ProgressBar"
         app:layout_widthPercent="10%"
         app:layout_heightPercent="10%"
-        app:layout_marginPercent="40%"
+        app:layout_marginPercent="45%"
         android:indeterminate="true"
         android:id="@+id/progress_bar"
         android:visibility="visible" />
