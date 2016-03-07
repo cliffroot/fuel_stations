@@ -1,10 +1,10 @@
 package com.tryp.support.stations;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
@@ -35,7 +35,6 @@ import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.Collection;
-import java.util.Set;
 
 import java8.util.stream.StreamSupport;
 
@@ -78,6 +77,12 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
     StationsContract.UserActionListener actionListener;
 
     public StationsView() { }
+
+    @Override
+    public void onCreate (Bundle b) {
+        super.onCreate(b);
+    }
+
 
     public static Fragment getInstance() {
         instance = new StationsView_();
@@ -123,10 +128,6 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
     @Override
     public void onPause () {
         super.onPause();
-        Set<Marker> markerSet  = markerStationsMap.keySet();
-        for (Marker marker: markerSet) {
-            marker.remove();
-        }
         mapView.onPause();
     }
 
@@ -156,13 +157,14 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
     @Override
     public void displayStations(@NonNull Collection<Station> stations) {
         Preconditions.checkNotNull(stations);
-
-        Log.e("HostAd log from " + getClass().getName() + hashCode(), "displayStations called with markers already: " + markerStationsMap.size());
-
+        
         if (getActivity() != null) {
             getActivity().runOnUiThread(() -> {
                 mapView.getMapAsync(map -> {
                     this.map = map;
+
+                    StreamSupport.stream(markerStationsMap.keySet()).forEach(Marker::remove);
+
                     StreamSupport.stream(stations).forEach(
                             station -> {
                                 Marker m = map.addMarker(new MarkerOptions().position(station.getPosition()).title(station.getName())
@@ -171,8 +173,14 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
                             }
                     );
                     map.setOnMarkerClickListener((marker) -> {
+                        for (Marker m: markerStationsMap.keySet()) {
+                        }
+
+
                         if (markerStationsMap.get(marker) == null) { // this must be our current location marker
-                            Log.w("HostAd log from map.setOnMarkerClick", "markerStationsMap has got null for this one");
+                            if (currentStation != null) {
+                                dismissSelection();
+                            }
                             return false;
                         }
                         currentMarker = marker;

@@ -46,7 +46,7 @@ public class HostAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        Log.w("HostAdapter", "getItem was called");
+        Log.w("Log from HostAdapter", "getItem was called");
         switch (position) {
             case 0:
                 first = StationsView.getInstance();

@@ -59,6 +59,12 @@ public class LoggingFragment extends Fragment {
     }
 
     @Override
+    public void onSaveInstanceState (Bundle b) {
+        super.onSaveInstanceState(b);
+        Log.w(TAG, "onSaveInstanceState");
+    }
+
+    @Override
     public void onStop () {
         super.onStop();
         Log.w(TAG, "onStop");

@@ -30,7 +30,7 @@ public class StationsPresenter implements StationsContract.UserActionListener {
     @Override
     public void loadStations() {
 
-        Log.w("HostAdapter", "loadStations was called!") ;
+        Log.w("Log from HostAdapter", "loadStations was called!") ;
 
         view.displayProgressBar(true);
         view.getCurrentBounds(new StationsContract.View.Callback<LatLngBounds>() {
