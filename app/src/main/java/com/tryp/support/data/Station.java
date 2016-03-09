@@ -78,7 +78,6 @@ public class Station implements Parcelable {
         this.position = position;
     }
 
-    @Nullable
     public Set<String> getFuelTypes () {
         return fuelTypeToPriceMap.keySet();
     }

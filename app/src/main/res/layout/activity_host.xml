@@ -22,7 +22,16 @@
             app:elevation="0dp"
             />
 
+        <android.support.design.widget.TabLayout
+            android:id="@+id/sliding_tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabMode="fixed"
+            android:gravity="bottom"
+            app:tabContentStart="?attr/actionBarSize"/>
+
     </android.support.design.widget.AppBarLayout>
+
 
     <android.support.v4.view.ViewPager
         android:id="@+id/pager"
@@ -30,18 +39,16 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_height="match_parent" >
 
-        <android.support.v4.view.PagerTabStrip
-            android:id="@+id/pager_title_strip"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/tab_strip_height"
-            android:layout_gravity="top"
-            android:paddingTop="5dp"
-            android:background="@color/colorPrimary"
-            android:textColor="#ffffff"
-            android:paddingBottom="5dp" />
+        <!--<android.support.v4.view.PagerTabStrip-->
+            <!--android:id="@+id/pager_title_strip"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="@dimen/tab_strip_height"-->
+            <!--android:layout_gravity="top"-->
+            <!--android:paddingTop="5dp"-->
+            <!--android:background="@color/colorPrimary"-->
+            <!--android:textColor="#ffffff"-->
+            <!--android:paddingBottom="5dp" />-->
 
     </android.support.v4.view.ViewPager>
-
-    <!--<include layout="@layout/content_host" />-->
 
 </android.support.design.widget.CoordinatorLayout>

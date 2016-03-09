@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.ContextCompat;
@@ -45,6 +46,8 @@ public class HostActivity extends LoggingActivity implements GoogleApiClient.Con
     EventBus eventBus;
     Location currentLocation;
     FragmentPagerAdapter adapter;
+
+    TabLayout tabLayout;
 
     @Override
     public void onCreate(Bundle b) {
@@ -123,6 +126,9 @@ public class HostActivity extends LoggingActivity implements GoogleApiClient.Con
         adapter = new HostAdapter(getSupportFragmentManager(), this);
         pager = ((ViewPager) findViewById(R.id.pager));
         pager.setAdapter(adapter);
+
+        tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
+        tabLayout.setupWithViewPager(pager);
     }
 
 

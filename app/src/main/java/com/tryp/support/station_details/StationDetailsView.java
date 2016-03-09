@@ -1,8 +1,16 @@
 package com.tryp.support.station_details;
 
 import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.RatingBar;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.MapView;
@@ -11,7 +19,9 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.common.collect.Maps;
 import com.tryp.support.R;
+import com.tryp.support.adapter.PriceAdapter;
 import com.tryp.support.data.Station;
 import com.tryp.support.logging.LoggingActivity;
 import com.tryp.support.utils.MapBoxApiPathProvider_;
@@ -21,8 +31,11 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Extra;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.annotations.res.ColorRes;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import java8.util.stream.StreamSupport;
 
@@ -46,6 +59,24 @@ public class StationDetailsView extends LoggingActivity implements StationDetail
     @ViewById(R.id.map_view)
     MapView mapView;
 
+    @ViewById(R.id.station_rating_bar)
+    RatingBar stationRatingBar;
+
+    @ViewById(R.id.recycler_view_prices)
+    RecyclerView pricesRecyclerView;
+
+    @ColorRes(R.color.colorAccent)
+    int tintColor;
+
+    @ViewById(R.id.cafe_image_view)
+    ImageView cafeImageView;
+
+    @ViewById(R.id.repair_image_view)
+    ImageView repairImageView;
+
+    @ViewById(R.id.shop_image_view)
+    ImageView shopwImageView;
+
     @AfterViews
     void setupMap () {
         mapView.onCreate(null);
@@ -53,6 +84,7 @@ public class StationDetailsView extends LoggingActivity implements StationDetail
 
     @AfterViews
     void showMarkersOnMap () {
+
         mapView.getMapAsync(map -> {
             map.addMarker(new MarkerOptions().position(currentLocation).title("Me"));
             Marker m2 = map.addMarker(new MarkerOptions().position(station.getPosition()).title(station.getName()));
@@ -65,6 +97,58 @@ public class StationDetailsView extends LoggingActivity implements StationDetail
             PathProvider provider = MapBoxApiPathProvider_.getInstance_(this);
             showPath(provider);
         });
+    }
+
+    @AfterViews
+    void setupRatingBar () {
+        Drawable stars = stationRatingBar.getProgressDrawable();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            stars.setTint(tintColor);
+        } else {
+            stars.setColorFilter(tintColor, PorterDuff.Mode.SRC_ATOP);
+        }
+    }
+
+    @AfterViews
+    void setupRecyclerView () {
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        pricesRecyclerView.setLayoutManager(layoutManager);
+        pricesRecyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        List<Map.Entry> fuelTypesToPrices = new LinkedList<>();
+        for (String type: station.getFuelTypes()) {
+            fuelTypesToPrices.add(Maps.immutableEntry(type, station.getPriceByFuelType(type)));
+        }
+        PriceAdapter adapter = new PriceAdapter(this, fuelTypesToPrices);
+        pricesRecyclerView.setAdapter(adapter);
+
+    }
+
+    @AfterViews
+    void setupIcons () {
+        Drawable drawable = cafeImageView.getDrawable();
+
+        int color = Color.parseColor("#757575");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            drawable.setTint(color);
+        } else {
+            drawable.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+        }
+
+        drawable = shopwImageView.getDrawable();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            drawable.setTint(color);
+        } else {
+            drawable.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+        }
+
+
+        drawable = repairImageView.getDrawable();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            drawable.setTint(color);
+        } else {
+            drawable.setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
+        }
     }
 
     void showPath (PathProvider pathProvider) {

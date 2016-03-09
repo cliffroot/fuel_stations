@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
 apply plugin: 'me.tatarka.retrolambda'
-def AAVersion = '4.0'
+def AAVersion = '3.3'
 def AASnapshotVersion = '4.0-SNAPSHOT'
 
 
@@ -25,6 +25,9 @@ apt {
 repositories {
     maven {
         url = 'https://oss.sonatype.org/content/repositories/snapshots'
+    }
+    maven {
+        url = "https://jitpack.io"
     }
 }
 
@@ -66,8 +69,15 @@ dependencies {
     compile 'com.google.android.gms:play-services-location:8.4.0'
     compile 'com.google.guava:guava:19.0'
     compile 'net.sourceforge.streamsupport:streamsupport:1.1.4'
-    apt "org.androidannotations:androidannotations:$AASnapshotVersion"
-    compile "org.androidannotations:androidannotations-api:$AASnapshotVersion"
+
+    compile "org.androidannotations:androidannotations-api:$AAVersion"
+    apt "org.androidannotations:androidannotations:$AAVersion"
+
+    compile 'com.squareup.retrofit:retrofit:1.9.0'
+    compile 'com.squareup.okhttp:okhttp:2.5.0'
+    compile 'com.google.code.gson:gson:1.7.2'
+    compile 'com.github.techery:ProperRatingBar:v0.0.3'
+
 
     androidTestCompile 'junit:junit:4.12'
     androidTestCompile 'com.android.support.test.uiautomator:uiautomator-v18:2.1.1'
