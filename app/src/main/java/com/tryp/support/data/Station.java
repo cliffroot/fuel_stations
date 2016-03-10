@@ -1,7 +1,5 @@
 package com.tryp.support.data;
 
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Pair;
@@ -9,37 +7,66 @@ import android.util.Pair;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.common.base.Preconditions;
 
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
+import org.parceler.Parcel;
+import org.parceler.ParcelConstructor;
+import org.parceler.Transient;
+
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import io.realm.Realm;
+import io.realm.RealmConfiguration;
+import io.realm.RealmList;
+import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
+import java8.util.stream.Collectors;
+import java8.util.stream.StreamSupport;
 
 /**
  * Created by cliffroot on 01.03.16.
  */
-public class Station implements Parcelable {
+@org.parceler.Parcel(value = Parcel.Serialization.BEAN, analyze = { Station.class })
+public class Station extends RealmObject {
+
+    private static final int DEFAULT_RATING = 4;
 
     @NonNull
-    Integer id;
+    @PrimaryKey
+    private Integer id;
 
     @NonNull
-    String name;
+    private String name;
 
     @NonNull
-    String address;
+    private String address;
 
-    @NonNull
-    LatLng position;
+    private double positionLatitude;
+    private double positionLongitude;
 
-    Map<String, BigDecimal> fuelTypeToPriceMap = new HashMap<>();
+    @Transient
+    private RealmList<RealmPair> fuelTypeToPriceMap = new RealmList<>();
 
-    public Station(@NonNull Integer id, @NonNull String name, @NonNull String address, @NonNull LatLng position,
-                   Map<String, BigDecimal> fuelTypeToPriceMap) {
+    private int rating = DEFAULT_RATING;
+
+    public Station() {}
+
+    @ParcelConstructor
+    public Station(@NonNull Integer id, @NonNull String name, @NonNull String address, double positionLatitude, double positionLongitude) {
         this.id = id;
         this.name = name;
         this.address = address;
-        this.position = position;
-        this.fuelTypeToPriceMap = fuelTypeToPriceMap;
+        this.positionLatitude   = positionLatitude;
+        this.positionLongitude  = positionLongitude;
+
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 
     @NonNull
@@ -70,85 +97,68 @@ public class Station implements Parcelable {
     }
 
     @NonNull
-    public LatLng getPosition() {
-        return position;
+    public static LatLng getPosition(@NonNull Station station) {
+        return new LatLng(station.getPositionLatitude(), station.getPositionLongitude());
     }
 
-    public void setPosition(@NonNull LatLng position) {
-        this.position = position;
+    public static void setPosition(@NonNull Station station, @NonNull LatLng position) {
+        station.setPositionLatitude(position.latitude);
+        station.setPositionLongitude(position.longitude);
     }
 
-    public Set<String> getFuelTypes () {
-        return fuelTypeToPriceMap.keySet();
+    public double getPositionLatitude() {
+        return positionLatitude;
+    }
+
+    public void setPositionLatitude(double positionLatitude) {
+        this.positionLatitude = positionLatitude;
+    }
+
+    public double getPositionLongitude() {
+        return positionLongitude;
+    }
+
+    public void setPositionLongitude(double positionLongitude) {
+        this.positionLongitude = positionLongitude;
+    }
+
+    public static Set<String> getFuelTypes (Station station) {
+        return new HashSet<>(StreamSupport.stream(station.getFuelTypeToPriceMap()).map((RealmPair::getLeft)).collect(Collectors.toList()));
+
     }
 
     @Nullable
-    public BigDecimal getPriceByFuelType (@NonNull String fuelType) {
+    public static String getPriceByFuelType (@NonNull Station station, @NonNull String fuelType) {
         Preconditions.checkNotNull(fuelType);
-        return fuelTypeToPriceMap.get(fuelType);
+
+        List<RealmPair> list =
+                StreamSupport.stream(station.getFuelTypeToPriceMap()).filter(pair -> pair.getLeft().equals(fuelType)).collect(Collectors.toList());
+        if (list.size() > 0) {
+            return list.get(0).getRight();
+        } else {
+            return null;
+        }
     }
 
-    Station addTypeToPriceEntry (@NonNull Pair<String, BigDecimal> entry) {
+    public static Station addTypeToPriceEntry (@NonNull Station station, @NonNull Pair<String, String> entry) {
         Preconditions.checkNotNull(entry);
-        fuelTypeToPriceMap.put(entry.first, entry.second);
-        return this;
+        station.fuelTypeToPriceMap.add(new RealmPair(entry.first, entry.second));
+        return station;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Station station = (Station) o;
-
-        if (!id.equals(station.id)) return false;
-        if (!name.equals(station.name)) return false;
-        if (!address.equals(station.address)) return false;
-        if (!position.equals(station.position)) return false;
-        return !(fuelTypeToPriceMap != null ? !fuelTypeToPriceMap.equals(station.fuelTypeToPriceMap) : station.fuelTypeToPriceMap != null);
+    public static void loadFuelToPriceMap (RealmConfiguration config, Station station) {
+        RealmList list = Realm.getInstance(config).where(Station.class).equalTo("id", station.getId()).findFirst().getFuelTypeToPriceMap();
+        station.setFuelTypeToPriceMap(list);
 
     }
 
-    @Override
-    public int hashCode() {
-        int result = id.hashCode();
-        result = 31 * result + name.hashCode();
-        result = 31 * result + address.hashCode();
-        result = 31 * result + position.hashCode();
-        result = 31 * result + (fuelTypeToPriceMap != null ? fuelTypeToPriceMap.hashCode() : 0);
-        return result;
+    @Transient
+    public RealmList<RealmPair> getFuelTypeToPriceMap() {
+        return fuelTypeToPriceMap;
     }
 
-
-    @Override
-    public int describeContents() {
-        return 0;
+    @Transient
+    public void setFuelTypeToPriceMap(RealmList<RealmPair> fuelTypeToPriceMap) {
+        this.fuelTypeToPriceMap = fuelTypeToPriceMap;
     }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeValue(this.id);
-        dest.writeString(this.name);
-        dest.writeString(this.address);
-        dest.writeParcelable(this.position, 0);
-        dest.writeMap(this.fuelTypeToPriceMap);
-    }
-
-    protected Station(Parcel in) {
-        this.id = (Integer) in.readValue(Integer.class.getClassLoader());
-        this.name = in.readString();
-        this.address = in.readString();
-        this.position = in.readParcelable(LatLng.class.getClassLoader());
-        this.fuelTypeToPriceMap = in.readHashMap(BigDecimal.class.getClassLoader());
-    }
-
-    public static final Parcelable.Creator<Station> CREATOR = new Parcelable.Creator<Station>() {
-        public Station createFromParcel(Parcel source) {
-            return new Station(source);
-        }
-
-        public Station[] newArray(int size) {
-            return new Station[size];
-        }
-    };
 }

@@ -1,38 +1,41 @@
 package com.tryp.support.data;
 
-import android.support.annotation.IntRange;
+import android.content.Context;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.util.Pair;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+import com.tryp.support.CustomApplication;
 import com.tryp.support.stations_list.StationsListContract;
 import com.tryp.support.utils.LocationHelper;
 
-import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EBean;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
+import io.realm.Realm;
+import io.realm.RealmResults;
 import java8.util.stream.Collectors;
 import java8.util.stream.StreamSupport;
 
 /**
- * Created by cliffroot on 01.03.16.
+ * Created by cliffroot on 10.03.16.
  */
 @EBean
-public class MockStationRepository implements StationRepository {
-
-    public MockStationRepository () {}
+public class MockRealmStationRepository implements StationRepository {
 
     static List<Station> DUMMY_VALUES = Lists.newArrayList(
             new Station(1, "Барс 2000", "Дмитра Луценка, 11", 50.3846, 30.4447),
             new Station(2, "АГЗП", "Кільцева дорога, 110", 50.3833, 30.4411),
-            new Station(2, "Газовик", "Кільцева дорога, 8", 50.3909, 30.4297)
-            );
+            new Station(3, "Газовик", "Кільцева дорога, 8", 50.3909, 30.4297)
+    );
 
     static {
         Station.addTypeToPriceEntry(DUMMY_VALUES.get(0), Pair.create("A98", String.valueOf(19.45d)));
@@ -42,25 +45,46 @@ public class MockStationRepository implements StationRepository {
         Station.addTypeToPriceEntry(DUMMY_VALUES.get(2), Pair.create("ГАЗ", String.valueOf(5.15d)));
     }
 
+    RealmResults<Station> stations;
+
+    public MockRealmStationRepository(Context context) {
+        setupRealm(context);
+    }
+
+    public void setupRealm (Context context) {
+
+        Realm realm = Realm.getInstance(((CustomApplication) context.getApplicationContext()).getRealmConfiguration());
+        stations = realm.where(Station.class).findAll();
+
+        realm.beginTransaction();
+
+        realm.copyToRealmOrUpdate(DUMMY_VALUES.get(0));
+        realm.copyToRealmOrUpdate(DUMMY_VALUES.get(1));
+        realm.copyToRealmOrUpdate(DUMMY_VALUES.get(2));
+
+        realm.commitTransaction();
+    }
+
     @Override
-    @Background
     public void getAllStations(Callback<Collection<Station>> callback) {
-        callback.onDone(DUMMY_VALUES);
+        callback.onDone(stations);
     }
 
     @Override
-    @Background
     public void getVisibleStations(@NonNull LatLngBounds bounds, Callback<Collection<Station>> callback) {
-        Preconditions.checkNotNull(bounds);
-        callback.onDone(DUMMY_VALUES);
+        callback.onDone(
+                StreamSupport.stream(stations).filter(station -> bounds.contains(Station.getPosition(station))).collect(Collectors.toList()));
     }
 
     @Override
-    @Background
+    public void getStationInfo(Integer id, Callback<Station> callback) {
+        callback.onDone(stations.where().equalTo("id", id).findFirst());
+    }
+
+    @Override
     public void getFilteredStations(@NonNull StationsListContract.View.Filter filter,
                                     @NonNull LatLng myPosition, Callback<Collection<Station>> callback) {
-        Preconditions.checkNotNull(filter);
-        callback.onDone(StreamSupport.stream(DUMMY_VALUES)
+        callback.onDone(StreamSupport.stream(stations)
                 .filter(station ->
                         Station.getPriceByFuelType(station, filter.getFuelType()) != null &&
                                 LocationHelper.distanceBetween(Station.getPosition(station), myPosition) < filter.getDistance())
@@ -71,27 +95,13 @@ public class MockStationRepository implements StationRepository {
     }
 
     @Override
-    @Background
     public void getAllFuelTypes(Callback<List<String>> callback) {
-        callback.onDone(Lists.newArrayList("A98", "A95", "ГАЗ"));
+        Set<String> res = new HashSet<>();
+
+        for (Station station: stations) {
+            Log.e("REALM", station.getFuelTypeToPriceMap().get(0).getLeft());
+            res.addAll(Station.getFuelTypes(station));
+        }
+        callback.onDone(new LinkedList<>(res));
     }
-
-    @Override
-    @Background
-    public void getStationInfo(@IntRange(from = 1, to = 3) Integer id, Callback<Station> callback) {
-        getAllStations(new Callback<Collection<Station>>() {
-            @Override
-            public void onDone(Collection<Station> result) {
-                StreamSupport.stream(result).filter(station ->
-                        station.getId().equals(id)).forEach((Station station) ->
-                            callback.onDone(station));
-            }
-
-            @Override
-            public void onFail(String reason) {
-                callback.onFail(reason);
-            }
-        });
-    }
-
 }

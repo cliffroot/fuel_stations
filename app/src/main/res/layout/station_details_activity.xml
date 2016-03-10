@@ -1,9 +1,7 @@
-<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<android.support.percent.PercentRelativeLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
     <ProgressBar
         style="@style/Base.Widget.AppCompat.ProgressBar"
@@ -18,7 +16,6 @@
         app:layout_widthPercent="100%"
         app:layout_heightPercent="60%"
         android:id="@+id/map_view"/>
-
 
 
 
@@ -47,7 +44,6 @@
             android:id="@+id/station_rating_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:numStars="4"
             android:stepSize="1"
             android:progressDrawable="@xml/rating_bar_custom"
             />
@@ -82,4 +78,4 @@
     </RelativeLayout>
 
 
-</android.support.percent.PercentRelativeLayout>
+    </android.support.percent.PercentRelativeLayout>

@@ -35,6 +35,7 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
+import org.parceler.Parcels;
 
 import java.util.Collection;
 
@@ -44,6 +45,7 @@ import java8.util.stream.StreamSupport;
 public class StationsView extends LoggingFragment implements StationsContract.View {
 
     private static final float MAP_ZOOM_DEFAULT = 12.f;
+    private static final String STATION_STATE_KEY ="station_state_key";
 
     static Fragment instance;
 
@@ -69,8 +71,6 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
 
     Marker currentMarker;
     Marker myLocationMarker;
-
-    @InstanceState
     Station currentStation;
 
     @InstanceState
@@ -85,6 +85,19 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
         super.onCreate(b);
     }
 
+    @Override
+    public void onSaveInstanceState (Bundle b) {
+        super.onSaveInstanceState(b);
+        b.putParcelable(STATION_STATE_KEY, Parcels.wrap(Station.class, currentStation));
+    }
+
+    @Override
+    public void onActivityCreated (Bundle b) {
+        super.onActivityCreated(b);
+        if (b != null) {
+            currentStation = Parcels.unwrap(b.getParcelable(STATION_STATE_KEY));
+        }
+    }
 
     public static Fragment getInstance() {
         instance = new StationsView_();
@@ -125,26 +138,8 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
     public void onResume () {
         super.onResume();
         mapView.onResume();
-
-//        PathProvider provider = MapBoxApiPathProvider_.getInstance_(getActivity());
-//        showPath(provider);
     }
 
-//    void showPath (PathProvider pathProvider) {
-//        pathProvider.getSegments(new LatLng(30.478653, 50.39724), new LatLng(30.346875, 50.462572), new PathProvider.Callback<List<LatLng>>() {
-//            @Override
-//            public void onCompleted(List<LatLng> result) {
-//                final PolylineOptions polyline = new PolylineOptions().color(Color.BLUE).width(5.f);
-//                StreamSupport.stream(result).forEach(polyline::add);
-//                getActivity().runOnUiThread(() -> mapView.getMapAsync(map -> map.addPolyline(polyline)));
-//            }
-//
-//            @Override
-//            public void onFail() {
-//                Log.e("from stationsView", "wow, fail");
-//            }
-//        });
-//    }
 
     @Override
     public void onPause () {
@@ -187,7 +182,7 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
 
                     StreamSupport.stream(stations).forEach(
                             station -> {
-                                Marker m = map.addMarker(new MarkerOptions().position(station.getPosition()).title(station.getName())
+                                Marker m = map.addMarker(new MarkerOptions().position(Station.getPosition(station)).title(station.getName())
                                         .snippet(station.getAddress()));
                                 markerStationsMap.forcePut(m, station);
                             }
@@ -253,7 +248,7 @@ public class StationsView extends LoggingFragment implements StationsContract.Vi
         Preconditions.checkNotNull(station);
 
         Intent i = new Intent(getActivity(), StationDetailsView_.class);
-        i.putExtra(StationDetailsView.STATION_EXTRA_KEY, station);
+        i.putExtra(StationDetailsView.STATION_EXTRA_KEY, Parcels.wrap(Station.class, station));
         i.putExtra(StationDetailsView.CURRENT_LOCATION_EXTRA_KEY, ((HostActivity) getActivity()).getCurrentLocation());
 
         getActivity().startActivity(i);

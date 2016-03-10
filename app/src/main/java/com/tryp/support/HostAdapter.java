@@ -7,7 +7,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.util.Log;
 import android.view.ViewGroup;
 
-import com.tryp.support.data.MockStationRepository_;
+import com.tryp.support.data.MockRealmStationRepository_;
 import com.tryp.support.data.StationRepository;
 import com.tryp.support.stations.StationsPresenter;
 import com.tryp.support.stations.StationsView;
@@ -33,7 +33,7 @@ public class HostAdapter extends FragmentPagerAdapter {
     public HostAdapter(FragmentManager fm, Context context) {
         super(fm);
         this.context = context;
-        this.stationRepository = MockStationRepository_.getInstance_(context);
+        this.stationRepository = MockRealmStationRepository_.getInstance_(context);
     }
 
     public StationsPresenter getStationsPresenter () {

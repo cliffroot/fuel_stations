@@ -4,6 +4,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,6 +21,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.common.collect.Maps;
+import com.tryp.support.CustomApplication;
 import com.tryp.support.R;
 import com.tryp.support.adapter.PriceAdapter;
 import com.tryp.support.data.Station;
@@ -32,6 +34,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Extra;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.res.ColorRes;
+import org.parceler.Parcels;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -50,7 +53,7 @@ public class StationDetailsView extends LoggingActivity implements StationDetail
 
     public final static int DEFAULT_PADDING = 128;
 
-    @Extra(STATION_EXTRA_KEY)
+    //@Extra(STATION_EXTRA_KEY)
     Station station;
 
     @Extra(CURRENT_LOCATION_EXTRA_KEY)
@@ -82,14 +85,21 @@ public class StationDetailsView extends LoggingActivity implements StationDetail
         mapView.onCreate(null);
     }
 
+    @Override
+    public void onCreate (Bundle b) {
+        super.onCreate(b);
+        station = Parcels.unwrap(getIntent().getParcelableExtra(STATION_EXTRA_KEY));
+        Station.loadFuelToPriceMap(((CustomApplication)getApplicationContext()).getRealmConfiguration(), station);
+    }
+
     @AfterViews
     void showMarkersOnMap () {
 
         mapView.getMapAsync(map -> {
             map.addMarker(new MarkerOptions().position(currentLocation).title("Me"));
-            Marker m2 = map.addMarker(new MarkerOptions().position(station.getPosition()).title(station.getName()));
+            Marker m2 = map.addMarker(new MarkerOptions().position(Station.getPosition(station)).title(station.getName()));
             m2.showInfoWindow();
-            map.moveCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(station.getPosition(), currentLocation), DEFAULT_PADDING));
+            map.moveCamera(CameraUpdateFactory.newLatLngBounds(new LatLngBounds(Station.getPosition(station), currentLocation), DEFAULT_PADDING));
 
             map.getUiSettings().setMyLocationButtonEnabled(false);
             map.getUiSettings().setCompassEnabled(false);
@@ -116,8 +126,8 @@ public class StationDetailsView extends LoggingActivity implements StationDetail
         pricesRecyclerView.setItemAnimator(new DefaultItemAnimator());
 
         List<Map.Entry> fuelTypesToPrices = new LinkedList<>();
-        for (String type: station.getFuelTypes()) {
-            fuelTypesToPrices.add(Maps.immutableEntry(type, station.getPriceByFuelType(type)));
+        for (String type: Station.getFuelTypes(station)) {
+            fuelTypesToPrices.add(Maps.immutableEntry(type, Station.getPriceByFuelType(station, type)));
         }
         PriceAdapter adapter = new PriceAdapter(this, fuelTypesToPrices);
         pricesRecyclerView.setAdapter(adapter);
@@ -152,7 +162,7 @@ public class StationDetailsView extends LoggingActivity implements StationDetail
     }
 
     void showPath (PathProvider pathProvider) {
-        pathProvider.getSegments(station.getPosition(), currentLocation, new PathProvider.Callback<List<LatLng>>() {
+        pathProvider.getSegments(Station.getPosition(station), currentLocation, new PathProvider.Callback<List<LatLng>>() {
             @Override
             public void onCompleted(List<LatLng> result) {
                 final PolylineOptions polyline = new PolylineOptions().color(Color.BLUE).width(5.f);

@@ -55,6 +55,10 @@ android {
         }
     }
 
+    dataBinding {
+        enabled = true
+    }
+
 }
 
 dependencies {
@@ -77,6 +81,10 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp:2.5.0'
     compile 'com.google.code.gson:gson:1.7.2'
     compile 'com.github.techery:ProperRatingBar:v0.0.3'
+    compile 'io.realm:realm-android:0.87.5'
+
+    compile 'org.parceler:parceler-api:0.2.16'
+    apt 'org.parceler:parceler:0.2.16'
 
 
     androidTestCompile 'junit:junit:4.12'

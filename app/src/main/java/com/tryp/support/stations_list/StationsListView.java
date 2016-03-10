@@ -19,7 +19,7 @@ import android.widget.Toast;
 import com.tryp.support.HostActivity;
 import com.tryp.support.R;
 import com.tryp.support.adapter.StationsAdapter;
-import com.tryp.support.data.MockStationRepository;
+import com.tryp.support.data.MockRealmStationRepository;
 import com.tryp.support.data.Station;
 import com.tryp.support.data.StationRepository;
 import com.tryp.support.logging.LoggingFragment;
@@ -60,7 +60,7 @@ public class StationsListView extends LoggingFragment implements StationsListCon
     @ViewById(R.id.empty_recycler_view)
     TextView emptyRecyclerView;
 
-    @Bean(MockStationRepository.class)
+    @Bean(MockRealmStationRepository.class)
     StationRepository stationRepository;
 
     @InstanceState
@@ -84,7 +84,7 @@ public class StationsListView extends LoggingFragment implements StationsListCon
 
     @AfterViews
     void setupPicker () {
-        Log.w("Log from " + getClass().getName() + hashCode(), "setupPicker");
+        Log.w("REALM " + getClass().getName() + hashCode(), "setupPicker");
         stationRepository.getAllFuelTypes(new StationRepository.Callback<List<String>>() {
             @Override
             public void onDone(List<String> result) {
@@ -192,12 +192,14 @@ public class StationsListView extends LoggingFragment implements StationsListCon
             @NonNull
             @Override
             public String getFuelType() {
+                Log.e("REALM", "Fuel: " + currentFuelType);
                 return currentFuelType;
             }
 
             @NonNull
             @Override
             public Double getDistance() {
+                Log.e("REALM", "Distance: " + currentRadius);
                 return Double.valueOf(currentRadius);
             }
         };

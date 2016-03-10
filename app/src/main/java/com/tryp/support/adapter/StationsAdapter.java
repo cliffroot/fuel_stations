@@ -1,6 +1,7 @@
 package com.tryp.support.adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +11,11 @@ import android.widget.TextView;
 import com.google.android.gms.maps.model.LatLng;
 import com.tryp.support.R;
 import com.tryp.support.data.Station;
+import com.tryp.support.station_details.StationDetailsView;
+import com.tryp.support.station_details.StationDetailsView_;
 import com.tryp.support.utils.LocationHelper;
+
+import org.parceler.Parcels;
 
 import java.util.Collection;
 import java.util.List;
@@ -63,18 +68,18 @@ public class StationsAdapter extends RecyclerView.Adapter<StationsAdapter.Statio
         }
 
         holder.stationNameAddressView.setText(address);
-        String price = stations.get(position).getPriceByFuelType(fuelType).toString();
+        String price = Station.getPriceByFuelType(stations.get(position), fuelType);
         while (price.contains("  ")) {
             price = price.replace("  ", "");
         }
         holder.priceView.setText(price + "UAH/dm3");
         holder.distanceToView.setText(String.valueOf(
-                LocationHelper.roundToHalf(LocationHelper.distanceBetween(sp.getPosition(), currentLocation))) + " km");
+                LocationHelper.roundToHalf(LocationHelper.distanceBetween(Station.getPosition(sp), currentLocation))) + " km");
         holder.itemView.setOnClickListener(view -> {
-//            Intent intent = new Intent(context, StationActivity_.class);
-//            intent.putExtra(StationActivity.STATION_EXTRA_ARG, sp);
-//            intent.putExtra(StationActivity.CURRENT_POSITION_ARG, currentLocation);
-//            context.startActivity(intent);
+            Intent intent = new Intent(context, StationDetailsView_.class);
+            intent.putExtra(StationDetailsView.STATION_EXTRA_KEY, Parcels.wrap(Station.class, sp));
+            intent.putExtra(StationDetailsView.CURRENT_LOCATION_EXTRA_KEY, currentLocation);
+            context.startActivity(intent);
         });
     }
 
