@@ -35,6 +35,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.is;
 
 @RunWith(AndroidJUnit4.class)
 @MediumTest
@@ -64,7 +65,7 @@ public class StationsListTest {
         onView(withText("List")).perform(click());
         onView(withId(R.id.fuel_spinner)).perform(click());
         onData(Matchers.containsString("ГАЗ")).perform(click());
-        onView(withId(R.id.recycler_view_stations)).check(matches(hasChildren(Matchers.is(1))));
+        onView(withId(R.id.recycler_view_stations)).check(matches(hasChildren(is(1))));
     }
 
     @Test
@@ -72,7 +73,7 @@ public class StationsListTest {
         onView(withText("List")).perform(click());
         onView(withId(R.id.fuel_spinner)).perform(click());
         onData(Matchers.containsString("ГАЗ")).perform(click());
-        onView(withId(R.id.recycler_view_stations)).check(matches(hasChildren(Matchers.is(1))));
+        onView(withId(R.id.recycler_view_stations)).check(matches(hasChildren(is(1))));
         clickPickerAndCheckNumberOfChildren(0.7f, 1);
         onView(withText(Matchers.containsString("5.15UAH"))).check(matches(isDisplayed()));
     }
@@ -87,9 +88,9 @@ public class StationsListTest {
         mActivityRule.getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
         onView(withText("A98")).check(matches(isDisplayed()));
-        onView(withId(R.id.recycler_view_stations)).check(matches(hasChildren(Matchers.is(2))));
+        onView(withId(R.id.recycler_view_stations)).check(matches(hasChildren(is(2))));
         onView(withId(R.id.radius_pick)).check((view, noViewFoundException) -> {
-            assertThat(((SeekBar) view).getProgress(), Matchers.is(6));
+            assertThat(((SeekBar) view).getProgress(), is(6));
         });
 
         mActivityRule.getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -108,7 +109,7 @@ public class StationsListTest {
             float[] coordinates = {xy[0] + (visibleParts.width() * ratioWidthFromLeft), xy[1]};
             return coordinates;
         }, Press.FINGER));
-        onView(withId(R.id.recycler_view_stations)).check(matches(hasChildren(Matchers.is(exactlyChildren))));
+        onView(withId(R.id.recycler_view_stations)).check(matches(hasChildren(is(exactlyChildren))));
 
     }
 

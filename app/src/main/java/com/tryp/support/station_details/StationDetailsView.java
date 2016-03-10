@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.RatingBar;
@@ -68,6 +69,9 @@ public class StationDetailsView extends LoggingActivity implements StationDetail
     @ViewById(R.id.recycler_view_prices)
     RecyclerView pricesRecyclerView;
 
+    @ViewById(R.id.toolbar)
+    Toolbar toolbar;
+
     @ColorRes(R.color.colorAccent)
     int tintColor;
 
@@ -90,6 +94,11 @@ public class StationDetailsView extends LoggingActivity implements StationDetail
         super.onCreate(b);
         station = Parcels.unwrap(getIntent().getParcelableExtra(STATION_EXTRA_KEY));
         Station.loadFuelToPriceMap(((CustomApplication)getApplicationContext()).getRealmConfiguration(), station);
+    }
+
+    @AfterViews
+    void setupToolbar () {
+        setSupportActionBar(toolbar);
     }
 
     @AfterViews

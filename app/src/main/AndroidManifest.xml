@@ -40,6 +40,7 @@
             android:label="Preferences"/>
 
         <activity android:name=".station_details.StationDetailsView_"
+            android:theme="@style/AppTheme.NoActionBar"
             android:label="Station"/>
 
     </application>
