@@ -67,6 +67,7 @@ dependencies {
     compile 'com.android.support:support-annotations:23.2.0'
     compile 'com.google.android.gms:play-services-maps:8.4.0'
     compile 'com.google.android.gms:play-services-location:8.4.0'
+    compile 'com.google.android.gms:play-services-gcm:8.4.0'
     compile 'com.google.guava:guava:19.0'
     compile 'net.sourceforge.streamsupport:streamsupport:1.1.4'
 

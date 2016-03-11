@@ -18,6 +18,8 @@ import android.view.MenuItem;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.gcm.GcmNetworkManager;
+import com.google.android.gms.gcm.PeriodicTask;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -26,6 +28,7 @@ import com.google.common.eventbus.EventBus;
 import com.tryp.support.data.MockStationRepository_;
 import com.tryp.support.data.StationRepository;
 import com.tryp.support.logging.LoggingActivity;
+import com.tryp.support.network.UpdateService;
 import com.tryp.support.stations.StationsPresenter;
 import com.tryp.support.utils.LocationReceivedEvent;
 
@@ -36,6 +39,9 @@ public class HostActivity extends LoggingActivity implements GoogleApiClient.Con
 
     private final static int LOCATION_PERMISSION_REQUEST_CODE = 17;
     private final static LatLng defaultLocation = new LatLng(50.455939, 30.519617);
+    private final static String UPDATE_SERVICE_TAG = "updateServiceTag";
+
+    private final static int POLL_STATIONS_TIME = 3600 * 12; // TOOD: get the actual value from preferences
 
     Toolbar toolbar;
 
@@ -46,8 +52,9 @@ public class HostActivity extends LoggingActivity implements GoogleApiClient.Con
     EventBus eventBus;
     Location currentLocation;
     FragmentPagerAdapter adapter;
-
     TabLayout tabLayout;
+
+    GcmNetworkManager gcmNetworkManager;
 
     @Override
     public void onCreate(Bundle b) {
@@ -57,7 +64,23 @@ public class HostActivity extends LoggingActivity implements GoogleApiClient.Con
         setupGoogleServicesClient();
         setupToolbar();
         setupPager();
+        setupUpdateService();
 
+    }
+
+    public void setupUpdateService () {
+        gcmNetworkManager = GcmNetworkManager.getInstance(this);
+        PeriodicTask task = new PeriodicTask.Builder()
+                .setService(UpdateService.class)
+                .setTag(UPDATE_SERVICE_TAG)
+                .setPeriod(POLL_STATIONS_TIME)
+                .setFlex(600)
+                .setPersisted(true)
+                .setRequiresCharging(false)
+                .setUpdateCurrent(true)
+                .build();
+
+        gcmNetworkManager.schedule(task);
     }
 
     @Override
