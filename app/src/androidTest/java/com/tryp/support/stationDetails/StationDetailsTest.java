@@ -41,8 +41,10 @@ public class StationDetailsTest {
         onView(withText("List")).perform(click());
         onView(withId(R.id.recycler_view_stations)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
         matchToolbarTitle("Station");
-
     }
+
+//    @Test
+//    public void
 
     private static ViewInteraction matchToolbarTitle(CharSequence title) {
         return onView(isAssignableFrom(Toolbar.class)).check(matches(withToolbarTitle(is(title))));

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="horizontal">
+
+
+    <TextView
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        app:layout_widthPercent="40%"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:id="@+id/time_title"
+        android:text="Time: "
+        android:textStyle="bold"
+         />
+
+    <TextView
+        android:id="@+id/time"
+        app:layout_widthPercent="60%"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_toRightOf="@id/time_title"
+        android:textColor = "@color/place_autocomplete_prediction_secondary_text"/>
+
+
+    <TextView
+        android:layout_marginStart="16dp"
+        app:layout_widthPercent="40%"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/time_title"
+        android:textSize="16sp"
+        android:text="Distance"
+        android:textStyle="bold"
+        android:id="@+id/distance_title"
+        />
+
+    <TextView
+        android:id="@+id/distance"
+        app:layout_widthPercent="60%"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:layout_marginStart="16dp"
+        android:layout_toRightOf="@id/time_title"
+        android:layout_below="@id/time"
+        android:textColor = "@color/place_autocomplete_prediction_secondary_text"/>
+
+
+</android.support.percent.PercentRelativeLayout>
